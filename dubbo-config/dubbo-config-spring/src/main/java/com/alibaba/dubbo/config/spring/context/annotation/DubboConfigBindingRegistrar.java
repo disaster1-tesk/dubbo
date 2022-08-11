@@ -88,7 +88,7 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
                                           BeanDefinitionRegistry registry) {
 
         Map<String, Object> properties = getSubProperties(environment.getPropertySources(), prefix);
-
+        //如果用户在yaml中配置了属性如：dubbo.application.name，则会自动创建对应Spring Bean到容器中，否则就会打印日志
         if (CollectionUtils.isEmpty(properties)) {
             if (log.isDebugEnabled()) {
                 log.debug("There is no property for binding to dubbo config class [" + configClass.getName()
@@ -100,6 +100,7 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
         Set<String> beanNames = multiple ? resolveMultipleBeanNames(properties) :
                 Collections.singleton(resolveSingleBeanName(properties, configClass, registry));
 
+        //注册和配置对象bean属性绑定处理器DubboConfigBindingBeanPostProcessor，委托给spring做属性值的绑定，跟xml采用一样的策略
         for (String beanName : beanNames) {
 
             registerDubboConfigBean(beanName, configClass, registry);

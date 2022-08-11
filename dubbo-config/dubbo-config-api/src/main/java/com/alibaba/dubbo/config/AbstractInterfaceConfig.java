@@ -107,6 +107,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void checkRegistry() {
         // for backward compatibility
         if (registries == null || registries.isEmpty()) {
+            //去系统变量中去获取相关属性
             String address = ConfigUtils.getProperty("dubbo.registry.address");
             if (address != null && address.length() > 0) {
                 registries = new ArrayList<RegistryConfig>();
@@ -121,7 +122,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if ((registries == null || registries.isEmpty())) {
             throw new IllegalStateException((getClass().getSimpleName().startsWith("Reference")
                     ? "No such any registry to refer service in consumer "
-                    : "No such any registry to export service in provider ")
+                    : "No such any registry to EXPORT service in provider ")
                     + NetUtils.getLocalHost()
                     + " use dubbo version "
                     + Version.getVersion()
@@ -159,6 +160,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     protected List<URL> loadRegistries(boolean provider) {
+        //校验注册地址
         checkRegistry();
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && !registries.isEmpty()) {
@@ -171,6 +173,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 if (sysaddress != null && sysaddress.length() > 0) {
                     address = sysaddress;
                 }
+                //在此处拼接相关的url参数
                 if (address.length() > 0 && !RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
                     Map<String, String> map = new HashMap<String, String>();
                     appendParameters(map, application);

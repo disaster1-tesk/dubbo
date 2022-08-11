@@ -100,10 +100,11 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-
+        //获取用户注解配置的包扫描
         Set<String> resolvedPackagesToScan = resolvePackagesToScan(packagesToScan);
 
         if (!CollectionUtils.isEmpty(resolvedPackagesToScan)) {
+            //触发ServiceBean定义和注入
             registerServiceBeans(resolvedPackagesToScan, registry);
         } else {
             if (logger.isWarnEnabled()) {
@@ -130,19 +131,22 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         scanner.setBeanNameGenerator(beanNameGenerator);
 
         scanner.addIncludeFilter(new AnnotationTypeFilter(Service.class));
-
+        //指定扫描dubbo的注解Service，不会扫描spring的Service注解
         for (String packageToScan : packagesToScan) {
 
             // Registers @Service Bean first
+            //将@Service作为不同Bean注入容器
             scanner.scan(packageToScan);
 
             // Finds all BeanDefinitionHolders of @Service whether @ComponentScan scans or not.
+            //对扫描的服务创建BeanDefinitionHolder，用于生成ServiceBean定义
             Set<BeanDefinitionHolder> beanDefinitionHolders =
                     findServiceBeanDefinitionHolders(scanner, packageToScan, registry, beanNameGenerator);
 
             if (!CollectionUtils.isEmpty(beanDefinitionHolders)) {
 
                 for (BeanDefinitionHolder beanDefinitionHolder : beanDefinitionHolders) {
+                    //注册ServiceBean定义并做数据绑定和解析
                     registerServiceBean(beanDefinitionHolder, registry, scanner);
                 }
 
@@ -254,7 +258,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         Class<?> interfaceClass = resolveServiceInterfaceClass(beanClass, service);
 
         String annotatedServiceBeanName = beanDefinitionHolder.getBeanName();
-
+        //生成servicebean的元数据
         AbstractBeanDefinition serviceBeanDefinition =
                 buildServiceBeanDefinition(service, interfaceClass, annotatedServiceBeanName);
 

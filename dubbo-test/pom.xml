@@ -33,6 +33,8 @@
         <module>dubbo-test-compatibility</module>
         <module>dubbo-test-integration</module>
         <module>dubbo-test-examples</module>
+        <module>dubbo-test-spi</module>
+        <module>dubbo-test-provider</module>
     </modules>
 
     <dependencyManagement>

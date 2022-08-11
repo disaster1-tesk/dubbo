@@ -51,13 +51,18 @@ import static org.springframework.beans.factory.support.BeanDefinitionBuilder.ro
  */
 public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistrar {
 
+    /**
+     * 此方法会在spring的AbstractApplicationContext#refresh方法中的invokeBeanFactoryPostProcessors(beanFactory);方法调用时会调用
+     * @param importingClassMetadata
+     * @param registry
+     */
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-
+        //获取需要扫描的包的set集合
         Set<String> packagesToScan = getPackagesToScan(importingClassMetadata);
-
+        //注册解析Service注解的BeanPostProcessor ---  服务提供端    随着dubbo的版本的升级，后期这里的使用的是DubboService
         registerServiceAnnotationBeanPostProcessor(packagesToScan, registry);
-
+        //注册解析Refrence注解的BeanPostProcessor --- 服务消费端    随着dubbo的版本的升级，后期这里的使用的是DubboRefrence
         registerReferenceAnnotationBeanPostProcessor(registry);
 
     }
@@ -70,11 +75,13 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
      * @since 2.5.8
      */
     private void registerServiceAnnotationBeanPostProcessor(Set<String> packagesToScan, BeanDefinitionRegistry registry) {
-
+        //生成ServiceAnnotationBeanPostProcessor的BeanDefinition
         BeanDefinitionBuilder builder = rootBeanDefinition(ServiceAnnotationBeanPostProcessor.class);
+        //初始化BeanDefinition的一些参数
         builder.addConstructorArgValue(packagesToScan);
         builder.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
+        //将BeanDefinition注册到BeanFactory
         BeanDefinitionReaderUtils.registerWithGeneratedName(beanDefinition, registry);
 
     }
@@ -87,6 +94,7 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
     private void registerReferenceAnnotationBeanPostProcessor(BeanDefinitionRegistry registry) {
 
         // Register @Reference Annotation Bean Processor
+        //注册@Reference注解Bean处理器
         BeanRegistrar.registerInfrastructureBean(registry,
                 ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
 
