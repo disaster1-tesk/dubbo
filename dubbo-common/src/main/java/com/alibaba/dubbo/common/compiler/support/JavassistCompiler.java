@@ -25,6 +25,7 @@ import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.LoaderClassPath;
 
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -119,6 +120,11 @@ public class JavassistCompiler extends AbstractCompiler {
                 }
             }
         }
+        //为了更好的观察compiler的文件，将class的内容输出到文件中
+        byte[] bytes = cls.toBytecode();
+        FileOutputStream output = new FileOutputStream("/Users/disaster/IdeaProjects/dubbo/dubbo-test/dubbo-test-spi/src/main/resources/"+className+".class");
+        output.write(bytes);
+        output.close();
         return cls.toClass(ClassHelper.getCallerClassLoader(getClass()), JavassistCompiler.class.getProtectionDomain());
     }
 

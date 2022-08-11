@@ -6,7 +6,10 @@ import com.alibaba.dubbo.rpc.Protocol;
 
 public class App {
     public static void main(String[] args) {
-        Protocol IProtocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("IProtocol");
-        System.out.println(IProtocol.getDefaultPort());
+//        Protocol IProtocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("IProtocol");
+//        System.out.println(IProtocol.getDefaultPort());
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+
+        protocol.destroy();
     }
 }
