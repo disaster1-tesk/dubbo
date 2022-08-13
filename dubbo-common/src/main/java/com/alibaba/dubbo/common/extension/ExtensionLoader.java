@@ -489,7 +489,7 @@ public class ExtensionLoader<T> {
 
     @SuppressWarnings("unchecked")
     private T createExtension(String name) {
-        //通过应用类加载器去加载指定的三种路径下的相关类对象
+        //通过应用类加载器去加载指定的三种路径下的相关类对象,这里并不会直接实例化class，而是将扫描到的class存放在不同的缓存中
         Class<?> clazz = getExtensionClasses().get(name);
         if (clazz == null) {
             throw findException(name);
@@ -506,7 +506,8 @@ public class ExtensionLoader<T> {
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
             if (wrapperClasses != null && !wrapperClasses.isEmpty()) {
                 for (Class<?> wrapperClass : wrapperClasses) {
-                    //给包装类进行参数注入
+                    //给包装类进行参数注入,拿Protocol接口举例，DubboFilterWrapper和DubboListenerWrapper是Protocol的包装类，我们拿Protocol的自动适配的类的时候
+                    //其实拿到的是包装之后的对象。
                     instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));
                 }
             }
@@ -853,6 +854,7 @@ public class ExtensionLoader<T> {
 
                 String[] value = adaptiveAnnotation.value();
                 // value is not set, use the value generated from class name as the key
+                // 如果@adapter没有设置calue值，则使用class名作为key
                 if (value.length == 0) {
                     char[] charArray = type.getSimpleName().toCharArray();
                     StringBuilder sb = new StringBuilder(128);
@@ -868,7 +870,6 @@ public class ExtensionLoader<T> {
                     }
                     value = new String[]{sb.toString()};
                 }
-
                 boolean hasInvocation = false;
                 for (int i = 0; i < pts.length; ++i) {
                     if (pts[i].getName().equals("com.alibaba.dubbo.rpc.Invocation")) {

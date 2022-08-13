@@ -37,12 +37,15 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     private final URL url;
 
     public AbstractProxyInvoker(T proxy, Class<T> type, URL url) {
+        //验证proxy参数
         if (proxy == null) {
             throw new IllegalArgumentException("proxy == null");
         }
+        //验证type参数
         if (type == null) {
             throw new IllegalArgumentException("interface == null");
         }
+        //验证proxy参数
         if (!type.isInstance(proxy)) {
             throw new IllegalArgumentException(proxy.getClass().getName() + " not implement interface " + type);
         }

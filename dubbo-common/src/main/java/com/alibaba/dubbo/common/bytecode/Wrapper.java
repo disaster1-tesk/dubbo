@@ -19,6 +19,7 @@ package com.alibaba.dubbo.common.bytecode;
 import com.alibaba.dubbo.common.utils.ClassHelper;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 
+import java.io.FileOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -104,6 +105,7 @@ public abstract class Wrapper {
 
         Wrapper ret = WRAPPER_MAP.get(c);
         if (ret == null) {
+            //在这里进行包装类的生成
             ret = makeWrapper(c);
             WRAPPER_MAP.put(c, ret);
         }
@@ -196,6 +198,7 @@ public abstract class Wrapper {
         c3.append(" throw new " + NoSuchMethodException.class.getName() + "(\"Not found method \\\"\"+$2+\"\\\" in class " + c.getName() + ".\"); }");
 
         // deal with get/set method.
+        //处理get、set方法
         Matcher matcher;
         for (Map.Entry<String, Method> entry : ms.entrySet()) {
             String md = entry.getKey();
@@ -241,9 +244,16 @@ public abstract class Wrapper {
         cc.addMethod(c2.toString());
         cc.addMethod(c3.toString());
 
+
         try {
+            System.out.println("Wrapper类生成");
+            System.out.println("c1 = " + c1);
+            System.out.println("c2 = " + c2);
+            System.out.println("c3 = " + c3);
+            System.out.println("cc = " + cc);
             Class<?> wc = cc.toClass();
             // setup static field.
+            //设置包装类中的相关属性
             wc.getField("pts").set(null, pts);
             wc.getField("pns").set(null, pts.keySet().toArray(new String[0]));
             wc.getField("mns").set(null, mns.toArray(new String[0]));
@@ -251,6 +261,7 @@ public abstract class Wrapper {
             int ix = 0;
             for (Method m : ms.values())
                 wc.getField("mts" + ix++).set(null, m.getParameterTypes());
+            System.out.println("wc.toString() = " + wc.toString());
             return (Wrapper) wc.newInstance();
         } catch (RuntimeException e) {
             throw e;

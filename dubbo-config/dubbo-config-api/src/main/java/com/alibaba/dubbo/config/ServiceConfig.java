@@ -532,7 +532,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         //很经典的delegete委托类去真正完成相关的逻辑，跟spring有异曲同工之处
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
                         //服务暴露后向注册中心注册服务信息
+                        //  registryURL.getProtocol= registry
+                        //   filter ---->listener --->registryProtocol   ( 这里使用了wapper 包装机制)
+                        //  filter ----> listener ----> dubboProtocol    服务暴露
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
+                        //添加export
                         exporters.add(exporter);
                     }
                 } else {

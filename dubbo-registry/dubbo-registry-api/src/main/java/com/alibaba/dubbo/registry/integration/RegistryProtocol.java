@@ -132,24 +132,26 @@ public class RegistryProtocol implements Protocol {
     @Override
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
         //export invoker
-        //打开端口，把服务实例存储到map
+        //暴露本地服务，打开端口，把服务实例存储到map
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker);
-
+        //获取注册中心URL
         URL registryUrl = getRegistryUrl(originInvoker);
 
         //registry provider
         //创建注册中心实例
         final Registry registry = getRegistry(originInvoker);
+        //获取服务提供者的url
         final URL registeredProviderUrl = getRegisteredProviderUrl(originInvoker);
 
         //to judge to delay publish whether or not
         boolean register = registeredProviderUrl.getParameter("register", true);
-
+        //向本地服务注册表注册服务，本地服务注册表其实就是一个concurrentHashMap
         ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
 
         if (register) {
             //服务暴露之后，注册服务元数据
             register(registryUrl, registeredProviderUrl);
+            //设置注册标志
             ProviderConsumerRegTable.getProviderWrapper(originInvoker).setReg(true);
         }
 

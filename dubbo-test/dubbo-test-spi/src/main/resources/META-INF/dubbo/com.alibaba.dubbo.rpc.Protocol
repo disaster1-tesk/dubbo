@@ -1,1 +1,2 @@
 IProtocol=com.alibaba.IProtocol
+IProtocolWrapper=com.alibaba.IProtocolWrapper
