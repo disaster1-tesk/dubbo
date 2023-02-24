@@ -46,7 +46,7 @@ public class ListenerExporterWrapper<T> implements Exporter<T> {
             for (ExporterListener listener : listeners) {
                 if (listener != null) {
                     try {
-                        listener.exported(this);
+                        listener.exported(this);//遍历通知
                     } catch (RuntimeException t) {
                         logger.error(t.getMessage(), t);
                         exception = t;

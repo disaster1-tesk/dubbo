@@ -72,6 +72,7 @@ public class ProtocolFilterWrapper implements Protocol {
                     @Override
                     public Result invoke(Invocation invocation) throws RpcException {
                         //每次调用都会传递给下一个拦截器
+                        //exception->moniter->timeout->trace->context->generic->classloader->echo
                         return filter.invoke(next, invocation);
                     }
 

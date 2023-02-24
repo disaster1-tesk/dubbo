@@ -35,6 +35,7 @@
         <module>dubbo-test-examples</module>
         <module>dubbo-test-spi</module>
         <module>dubbo-test-provider</module>
+        <module>dubbo-test-consumer</module>
     </modules>
 
     <dependencyManagement>

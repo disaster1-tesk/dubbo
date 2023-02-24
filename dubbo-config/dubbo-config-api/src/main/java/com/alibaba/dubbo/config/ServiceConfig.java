@@ -194,6 +194,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return unexported;
     }
 
+    //将 Bean 对象转换 URL 格式，所有 Bean 属性转成 URL 的参数。
+    //然后将 URL 传给 协议扩展点，基于扩展点的 扩展点自适应机制，根据 URL 的协议头，进行不同协议的服务暴露或引用。
     public synchronized void export() {
         if (provider != null) {
             if (export == null) {

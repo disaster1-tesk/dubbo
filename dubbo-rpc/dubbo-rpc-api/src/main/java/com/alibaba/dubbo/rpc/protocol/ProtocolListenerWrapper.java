@@ -54,6 +54,8 @@ public class ProtocolListenerWrapper implements Protocol {
         if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             return protocol.export(invoker);
         }
+        //如果不是register的protocol则走此处逻辑，此处逻辑是将protocol.export(invoker)返回的Export和ExporterListener通过ListenerExporterWrapper
+        //这个包装类进行绑定
         return new ListenerExporterWrapper<T>(protocol.export(invoker),
                 Collections.unmodifiableList(ExtensionLoader.getExtensionLoader(ExporterListener.class)
                         .getActivateExtension(invoker.getUrl(), Constants.EXPORTER_LISTENER_KEY)));
