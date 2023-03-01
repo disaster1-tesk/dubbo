@@ -64,6 +64,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         bindAddress = new InetSocketAddress(bindIp, bindPort);
         // 服务器最大可接受连接数
         this.accepts = url.getParameter(Constants.ACCEPTS_KEY, Constants.DEFAULT_ACCEPTS);
+        // 空闲事件，默认10分钟
         this.idleTimeout = url.getParameter(Constants.IDLE_TIMEOUT_KEY, Constants.DEFAULT_IDLE_TIMEOUT);
         try {
             //子类实现，真正打开服务器

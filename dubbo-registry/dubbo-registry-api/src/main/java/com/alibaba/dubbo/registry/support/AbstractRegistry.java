@@ -140,6 +140,7 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     public void doSaveProperties(long version) {
+        //通过版本号，保证拿到的数据是最新的
         if (version < lastCacheChanged.get()) {
             return;
         }
@@ -415,6 +416,10 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
+    /**
+     * 更新内存缓存和更新文件缓存，方法入口再notify方法中
+     * @param url
+     */
     private void saveProperties(URL url) {
         if (file == null) {
             return;
@@ -436,8 +441,10 @@ public abstract class AbstractRegistry implements Registry {
             properties.setProperty(url.getServiceKey(), buf.toString());
             long version = lastCacheChanged.incrementAndGet();
             if (syncSaveFile) {
+                //同步加载缓存
                 doSaveProperties(version);
             } else {
+                //异步加载缓存
                 registryCacheExecutor.execute(new SaveProperties(version));
             }
         } catch (Throwable t) {

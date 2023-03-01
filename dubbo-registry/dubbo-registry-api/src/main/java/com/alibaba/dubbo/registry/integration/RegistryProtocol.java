@@ -144,6 +144,7 @@ public class RegistryProtocol implements Protocol {
         final URL registeredProviderUrl = getRegisteredProviderUrl(originInvoker);
 
         //to judge to delay publish whether or not
+        //判断是否延时发布
         boolean register = registeredProviderUrl.getParameter("register", true);
         //向本地服务注册表注册服务，本地服务注册表其实就是一个concurrentHashMap
         ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
@@ -160,6 +161,7 @@ public class RegistryProtocol implements Protocol {
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(registeredProviderUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
         overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
+        //订阅服务
         registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
         //Ensure that a new exporter instance is returned every time export
         return new DestroyableExporter<T>(exporter, originInvoker, overrideSubscribeUrl, registeredProviderUrl);
@@ -292,7 +294,7 @@ public class RegistryProtocol implements Protocol {
                 return doRefer(getMergeableCluster(), registry, type, url);
             }
         }
-        return doRefer(cluster, registry, type, url);
+        return doRefer(cluster, registry, type, url);//真正执行逻辑的方法
     }
 
     private Cluster getMergeableCluster() {

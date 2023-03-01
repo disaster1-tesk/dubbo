@@ -288,6 +288,7 @@ public class DubboProtocol extends AbstractProtocol {
         url = url.addParameter(Constants.CODEC_KEY, DubboCodec.NAME);
         ExchangeServer server;
         try {
+            //此方法为服务器启动的入口，会绑定一个netty的listener
             server = Exchangers.bind(url, requestHandler);
         } catch (RemotingException e) {
             throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
@@ -359,7 +360,7 @@ public class DubboProtocol extends AbstractProtocol {
         ExchangeClient[] clients = new ExchangeClient[connections];
         for (int i = 0; i < clients.length; i++) {
             if (service_share_connect) {
-                clients[i] = getSharedClient(url);
+                clients[i] = getSharedClient(url);//创建可分享的客户端
             } else {
                 clients[i] = initClient(url);
             }
@@ -388,7 +389,7 @@ public class DubboProtocol extends AbstractProtocol {
                 return referenceClientMap.get(key);
             }
 
-            ExchangeClient exchangeClient = initClient(url);
+            ExchangeClient exchangeClient = initClient(url);//创建客户端
             client = new ReferenceCountExchangeClient(exchangeClient, ghostClientMap);
             referenceClientMap.put(key, client);
             ghostClientMap.remove(key);

@@ -282,9 +282,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 monitor = application.getMonitor();
             }
         }
-        checkApplication();
-        checkStub(interfaceClass);
-        checkMock(interfaceClass);
+        checkApplication();//校验应用参数
+        checkStub(interfaceClass);//校验本地存根
+        checkMock(interfaceClass);//校验本地伪装
         Map<String, String> map = new HashMap<String, String>();
         Map<Object, Object> attributes = new HashMap<Object, Object>();
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);
@@ -406,6 +406,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
                 URL registryURL = null;
                 for (URL url : urls) {
+                    //此处是Invoker生成的入口--核心
                     invokers.add(refprotocol.refer(interfaceClass, url));
                     if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
                         registryURL = url; // use last registry url
