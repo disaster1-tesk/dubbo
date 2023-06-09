@@ -134,6 +134,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 String root = toRootPath();
                 ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
                 if (listeners == null) {
+                    //如果listener为空，则说明缓冲中没有，这里把listener放入缓存
                     zkListeners.putIfAbsent(url, new ConcurrentHashMap<NotifyListener, ChildListener>());
                     listeners = zkListeners.get(url);
                 }

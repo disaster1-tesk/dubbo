@@ -3,6 +3,7 @@ package com.alibaba;
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.registry.redis.RedisRegistry;
 import com.alibaba.service.DemoService;
 
 import java.util.concurrent.locks.LockSupport;

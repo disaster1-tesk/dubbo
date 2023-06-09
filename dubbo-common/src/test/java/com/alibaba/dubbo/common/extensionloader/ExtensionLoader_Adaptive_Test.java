@@ -186,6 +186,7 @@ public class ExtensionLoader_Adaptive_Test {
             ExtensionLoader.getExtensionLoader(NoUrlParamExt.class).getAdaptiveExtension();
             fail();
         } catch (Exception expected) {
+            System.out.println(expected.getMessage());
             assertThat(expected.getMessage(), containsString("fail to create adaptive class for interface "));
             assertThat(expected.getMessage(), containsString(": not found url parameter or url attribute in parameters of method "));
         }

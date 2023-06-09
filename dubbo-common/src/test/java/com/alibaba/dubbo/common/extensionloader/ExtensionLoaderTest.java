@@ -140,7 +140,8 @@ public class ExtensionLoaderTest {
         int echoCount1 = Ext5Wrapper1.echoCount.get();
         int echoCount2 = Ext5Wrapper2.echoCount.get();
 
-        assertEquals("Ext5Impl1-echo", impl1.echo(url, "ha"));
+//        assertEquals("Ext5Impl1-echo", impl1.echo(url, "ha"));
+        assertEquals("Ext5Impl2-echo", impl2.echo(url, "ha"));
         assertEquals(echoCount1 + 1, Ext5Wrapper1.echoCount.get());
         assertEquals(echoCount2 + 1, Ext5Wrapper2.echoCount.get());
     }

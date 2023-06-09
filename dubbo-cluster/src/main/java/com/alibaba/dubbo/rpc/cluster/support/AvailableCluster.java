@@ -41,6 +41,7 @@ public class AvailableCluster implements Cluster {
             @Override
             public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
                 for (Invoker<T> invoker : invokers) {
+                    //这里的invoker是RegistryDirectory
                     if (invoker.isAvailable()) {
                         return invoker.invoke(invocation);
                     }

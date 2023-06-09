@@ -79,11 +79,14 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
         
         byte flag = in.readByte();
         switch (flag) {
+            //1.返回结果标记为Null值
             case DubboCodec.RESPONSE_NULL_VALUE:
                 break;
             case DubboCodec.RESPONSE_VALUE:
                 try {
+                    //2.读取方法调用返回值类型
                     Type[] returnType = RpcUtils.getReturnTypes(invocation);
+                    //3.如果返回值包含泛型，则调用反序列化解析接口
                     setValue(returnType == null || returnType.length == 0 ? in.readObject() :
                             (returnType.length == 1 ? in.readObject((Class<?>) returnType[0])
                                     : in.readObject((Class<?>) returnType[0], returnType[1])));
@@ -96,6 +99,7 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                     Object obj = in.readObject();
                     if (obj instanceof Throwable == false)
                         throw new IOException("Response data error, expect Throwable, but get " + obj);
+                    //4.保存读取的返回值异常结果
                     setException((Throwable) obj);
                 } catch (ClassNotFoundException e) {
                     throw new IOException(StringUtils.toString("Read response data failed.", e));
@@ -103,6 +107,7 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                 break;
             case DubboCodec.RESPONSE_NULL_VALUE_WITH_ATTACHMENTS:
                 try {
+                    //5.读取返回值为Null，并且有隐式参数
                     setAttachments((Map<String, String>) in.readObject(Map.class));
                 } catch (ClassNotFoundException e) {
                     throw new IOException(StringUtils.toString("Read response data failed.", e));
@@ -131,6 +136,7 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                 }
                 break;
             default:
+                //其 他 类 似 隐 式 参数 的 读 取
                 throw new IOException("Unknown result flag, expect '0' '1' '2' '3' '4' '5', get " + flag);
         }
         if (in instanceof Cleanable) {

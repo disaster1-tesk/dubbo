@@ -22,7 +22,7 @@ public class ValidationConsumer {
         serviceReferenceConfig.setApplication(applicationConfig);
         serviceReferenceConfig.setInterface(ParamValidationService.class);
         serviceReferenceConfig.setVersion("1.0.0");
-        serviceReferenceConfig.setValidation("true");
+//        serviceReferenceConfig.setValidation("true");
 
 
         ParamValidationService paramValidationService = serviceReferenceConfig.get();

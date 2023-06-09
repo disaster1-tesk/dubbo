@@ -3,6 +3,7 @@ package com.alibaba;
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.utils.ReferenceConfigCache;
 import com.alibaba.service.DemoService;
 import com.alibaba.service.User;
 
@@ -15,6 +16,7 @@ import java.util.concurrent.locks.LockSupport;
  */
 public class CacheConsumer {
     public static void main(String[] args) {
+        ReferenceConfigCache referenceCache = ReferenceConfigCache.getCache();
         ApplicationConfig applicationConfig = new ApplicationConfig("cache-consumer");
 
         RegistryConfig registryConfig = new RegistryConfig("nacos://139.196.154.217:8848");
@@ -23,11 +25,12 @@ public class CacheConsumer {
         serviceReferenceConfig.setApplication(applicationConfig);
         serviceReferenceConfig.setRegistry(registryConfig);
         serviceReferenceConfig.setInterface(DemoService.class);
-        serviceReferenceConfig.setVersion("1.0.0");
+//        serviceReferenceConfig.setVersion("1.0.0");
         serviceReferenceConfig.setCache("lru");
         serviceReferenceConfig.setProtocol("dubbo");
 
-        DemoService demoService = serviceReferenceConfig.get();
+        DemoService demoService = referenceCache.get(serviceReferenceConfig);
+//        DemoService demoService = serviceReferenceConfig.get();
         String disaster = demoService.setUser(User.builder().name("disaster").age(20).build());
         System.out.println("disaster = " + disaster);
         String disaster1 = demoService.setUser(User.builder().name("disaster").age(20).build());

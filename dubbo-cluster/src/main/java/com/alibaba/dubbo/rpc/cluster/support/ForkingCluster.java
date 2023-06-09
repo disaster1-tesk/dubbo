@@ -31,6 +31,7 @@ public class ForkingCluster implements Cluster {
 
     @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+        //ForkingClusterInvoker的创建，在构建方法中会进行服务的availablecheck
         return new ForkingClusterInvoker<T>(directory);
     }
 

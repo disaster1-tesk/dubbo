@@ -323,13 +323,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkProtocol();
         //添加属性
         appendProperties(this);
-        //校验本地存根
+        //校验本地存根，local或者stub都具有存根能力
         checkStub(interfaceClass);
         //校验mock
         checkMock(interfaceClass);
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
+        //多协议多注册中心暴露
         doExportUrls();
         CodecSupport.addProviderSupportedSerialization(getUniqueServiceName(), getExportedUrls());
         ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), this, ref);
@@ -370,10 +371,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
-        //获取当前服务对应的注册中心实例
+        //1.获取当前服务对应的注册中心资源，此处的资源在dubbo是由URL对象定义
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
-            //如果服务指定暴露多个协议（Dubbo、REST），则一次暴露服务
+            //2.如果服务指定暴露多个协议（Dubbo、REST），则一次暴露服务
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
@@ -391,10 +392,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (ConfigUtils.getPid() > 0) {
             map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
         }
-        //读取其他配置信息到map，用于后续构造URL
+        //1.读取其他配置信息到map，用于后续构造URL
         appendParameters(map, application);
         appendParameters(map, module);
-        //读取全局配置信息，会自动添加前缀
+        //2.读取全局配置信息，会自动添加前缀
         appendParameters(map, provider, Constants.DEFAULT_KEY);
         appendParameters(map, protocolConfig);
         appendParameters(map, this);
@@ -453,7 +454,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
             } // end of methods for
         }
-
+        //泛化调用的处理
         if (ProtocolUtils.isGeneric(generic)) {
             map.put(Constants.GENERIC_KEY, generic);
             map.put(Constants.METHODS_KEY, Constants.ANY_VALUE);
@@ -487,9 +488,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if ((contextPath == null || contextPath.length() == 0) && provider != null) {
             contextPath = provider.getContextpath();
         }
-
+        //为服务提供者注册并绑定IP地址，可单独配置，ip的获取的配置从env-java propertie- config - 遍历URL获取（连通性通过socket进行测试）
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
+
         URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
 
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
@@ -503,11 +505,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (!Constants.SCOPE_NONE.toString().equalsIgnoreCase(scope)) {
 
             // export to local if the config is not remote (export to remote only when config is remote)
-            //本地服务暴露，dubbo默认都会暴露本地服务，因此此方法每次都会执行
+            //3.本地服务暴露，dubbo默认都会暴露本地服务，因此此方法每次都会执行
             if (!Constants.SCOPE_REMOTE.toString().equalsIgnoreCase(scope)) {
+                //本地暴露的真正入口
                 exportLocal(url);
             }
             // export to remote if the config is not local (export to local only when config is local)
+            //如果配置不是本地的，则导出到远程(只有当配置是本地的，才导出到本地)
             if (!Constants.SCOPE_LOCAL.toString().equalsIgnoreCase(scope)) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
@@ -517,7 +521,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         url = url.addParameterIfAbsent(Constants.DYNAMIC_KEY, registryURL.getParameter(Constants.DYNAMIC_KEY));
                         URL monitorUrl = loadMonitor(registryURL);
                         if (monitorUrl != null) {
-                            //如果配置了监控地址，则服务调用信息会上报
+                            //4.如果配置了监控地址，则服务调用信息会上报
                             url = url.addParameterAndEncoded(Constants.MONITOR_KEY, monitorUrl.toFullString());
                         }
                         if (logger.isInfoEnabled()) {
@@ -529,11 +533,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         if (StringUtils.isNotEmpty(proxy)) {
                             registryURL = registryURL.addParameter(Constants.PROXY_KEY, proxy);
                         }
-                        //默认使用javassist的字节码操作框架，通过动态代理转换成Invoker，registryURL存储的是注册中心地址，使用export作为key追加服务元数据信息
+                        //5.默认使用javassist的字节码操作框架，通过动态代理转换成Invoker，registryURL存储的是注册中心地址，使用export作为key追加服务元数据信息
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
                         //很经典的delegete委托类去真正完成相关的逻辑，跟spring有异曲同工之处
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
-                        //服务暴露后向注册中心注册服务信息
+                        //6.服务暴露后向注册中心注册服务信息
                         //  registryURL.getProtocol= registry
                         //   filter ---->listener --->registryProtocol   ( 这里使用了wapper 包装机制)
                         //  filter ----> listener ----> dubboProtocol    服务暴露
@@ -542,7 +546,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         exporters.add(exporter);
                     }
                 } else {
-                    //如果没有注册中心场景，直接暴露服务，也就是所谓的dubbo直链
+                    //如果没有注册中心场景，直接暴露服务，也就是所谓的dubbo直连，直连不需要追加服务元数据，因此也就不需要添加export的key到URL上
                     Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
                     DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
@@ -562,6 +566,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .setHost(LOCALHOST)
                     .setPort(0);
             StaticContext.getContext(Constants.SERVICE_IMPL_CLASS).put(url.getServiceKey(), getServiceClass(ref));
+            //调用InjvmProtocol#export方法
             Exporter<?> exporter = protocol.export(
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
             exporters.add(exporter);

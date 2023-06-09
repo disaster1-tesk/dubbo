@@ -76,6 +76,7 @@ public class DubboProtocol extends AbstractProtocol {
         public Object reply(ExchangeChannel channel, Object message) throws RemotingException {
             if (message instanceof Invocation) {
                 Invocation inv = (Invocation) message;
+                //1.查找Invocation关联的Invoker
                 Invoker<?> invoker = getInvoker(channel, inv);
                 // need to consider backward-compatibility if it's a callback
                 if (Boolean.TRUE.toString().equals(inv.getAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
@@ -101,6 +102,7 @@ public class DubboProtocol extends AbstractProtocol {
                     }
                 }
                 RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
+                //2.调用业务方具体方法
                 return invoker.invoke(inv);
             }
             throw new RemotingException(channel, "Unsupported request: "
@@ -192,7 +194,9 @@ public class DubboProtocol extends AbstractProtocol {
     Invoker<?> getInvoker(Channel channel, Invocation inv) throws RemotingException {
         boolean isCallBackServiceInvoke = false;
         boolean isStubServiceInvoke = false;
+        //1.获取服务暴露协议的端口
         int port = channel.getLocalAddress().getPort();
+        //2.获取调用传递的接口
         String path = inv.getAttachments().get(Constants.PATH_KEY);
         // if it's callback service on client side
         isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getAttachments().get(Constants.STUB_EVENT_KEY));
@@ -205,8 +209,9 @@ public class DubboProtocol extends AbstractProtocol {
             path = inv.getAttachments().get(Constants.PATH_KEY) + "." + inv.getAttachments().get(Constants.CALLBACK_SERVICE_KEY);
             inv.getAttachments().put(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
         }
+        //3.根据端口、接口名、接口分组和接口版本构造唯一的key
         String serviceKey = serviceKey(port, path, inv.getAttachments().get(Constants.VERSION_KEY), inv.getAttachments().get(Constants.GROUP_KEY));
-
+        //4.从 HashMap 中 获 取 Exporter
         DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
 
         if (exporter == null)
@@ -250,7 +255,7 @@ public class DubboProtocol extends AbstractProtocol {
                 stubServiceMethodsMap.put(url.getServiceKey(), stubServiceMethods);
             }
         }
-        //开启
+        //服务初次暴露会开启端口
         openServer(url);
         optimizeSerialization(url);
         return exporter;
@@ -419,9 +424,11 @@ public class DubboProtocol extends AbstractProtocol {
         ExchangeClient client;
         try {
             // connection should be lazy
+            //1.如果配置了lazy属性，则真实调用才会创建tcp连接
             if (url.getParameter(Constants.LAZY_CONNECT_KEY, false)) {
                 client = new LazyConnectExchangeClient(url, requestHandler);
             } else {
+                //2.立刻与远程连接
                 client = Exchangers.connect(url, requestHandler);
             }
         } catch (RemotingException e) {

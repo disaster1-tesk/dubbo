@@ -24,6 +24,7 @@ import com.alibaba.dubbo.common.extensionloader.ext6_inject.Ext6;
 import junit.framework.Assert;
 
 public class Ext6Impl1 implements Ext6 {
+    //Dao 接口没有标注@SPI注解，无法进行注入
     public Dao obj;
     SimpleExt ext1;
 

@@ -94,6 +94,7 @@ public abstract class AbstractConfig implements Serializable {
         if (config == null) {
             return;
         }
+        //如果类的名称后缀是config、bean，则自动省略config、bean
         String prefix = "dubbo." + getTagName(config.getClass()) + ".";
         Method[] methods = config.getClass().getMethods();
         for (Method method : methods) {
@@ -104,6 +105,7 @@ public abstract class AbstractConfig implements Serializable {
                     String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase() + name.substring(4), ".");
 
                     String value = null;
+                    //如果id不为null，则需要加上ID具体值作为前缀进行添加值
                     if (config.getId() != null && config.getId().length() > 0) {
                         String pn = prefix + config.getId() + "." + property;
                         value = System.getProperty(pn);

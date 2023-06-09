@@ -81,6 +81,7 @@ public class GenericServiceTest {
             reference.setApplication(new ApplicationConfig("generic-consumer"));
             reference.setInterface(DemoService.class);
             reference.setUrl("dubbo://127.0.0.1:29581?generic=true&timeout=3000");
+            reference.setGeneric(true);
             DemoService demoService = reference.get();
             try {
                 // say name

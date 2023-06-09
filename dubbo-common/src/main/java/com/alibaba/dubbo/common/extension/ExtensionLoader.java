@@ -446,6 +446,7 @@ public class ExtensionLoader<T> {
                     instance = cachedAdaptiveInstance.get();
                     if (instance == null) {
                         try {
+                            //核心逻辑入口
                             instance = createAdaptiveExtension();
                             cachedAdaptiveInstance.set(instance);
                         } catch (Throwable t) {
@@ -501,7 +502,7 @@ public class ExtensionLoader<T> {
                 EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());
                 instance = (T) EXTENSION_INSTANCES.get(clazz);
             }
-            //自动包装，将@DisableInject注解修饰的方法进行set注入
+            //自动包装，@DisableInject禁用Setter方法自动注入依赖
             injectExtension(instance);
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
             if (wrapperClasses != null && !wrapperClasses.isEmpty()) {
@@ -759,7 +760,7 @@ public class ExtensionLoader<T> {
     }
 
     private Class<?> createAdaptiveExtensionClass() {
-        //通过此方法拼接一个class对象
+        //通过此方法拼接一个class对象,如果是在类上标注了adapter注解，则不进行字符串拼接$Adaptive类
         String code = createAdaptiveExtensionClassCode();
         ClassLoader classLoader = findClassLoader();
         com.alibaba.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
@@ -967,6 +968,7 @@ public class ExtensionLoader<T> {
         if (logger.isDebugEnabled()) {
             logger.debug(codeBuilder.toString());
         }
+        logger.info("codeBuilder = \n" + codeBuilder);
         return codeBuilder.toString();
     }
 

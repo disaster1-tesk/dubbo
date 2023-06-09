@@ -78,7 +78,7 @@ public class Provider {
         service.setProvider(providerConfig);
 //        service.setVersion("1.0.0");
         //集群调用失败时，Dubbo 提供了多种容错方案，缺省为 failover 重试，此方法内部会校验是否有相应的cluster去处理容错，如果没有则抛出异常
-//        service.setCluster("failover");
+        service.setCluster("failover");
         //同上面容错一致逻辑
 //        service.setLoadbalance("leastactive");
         //暴露及注册服务

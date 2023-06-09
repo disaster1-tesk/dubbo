@@ -91,6 +91,7 @@ public abstract class AbstractRegistry implements Registry {
         }
         this.file = file;
         loadProperties();
+        //通知
         notify(url.getBackupUrls());
     }
 
@@ -417,7 +418,7 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     /**
-     * 更新内存缓存和更新文件缓存，方法入口再notify方法中
+     * 更新内存缓存和更新文件缓存，方法入口在notify方法中
      * @param url
      */
     private void saveProperties(URL url) {

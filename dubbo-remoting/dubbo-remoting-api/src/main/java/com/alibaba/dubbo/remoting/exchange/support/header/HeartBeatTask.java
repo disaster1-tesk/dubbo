@@ -46,7 +46,9 @@ final class HeartBeatTask implements Runnable {
     public void run() {
         try {
             long now = System.currentTimeMillis();
+            //1.遍历所有Channel
             for (Channel channel : channelProvider.getChannels()) {
+                //2.忽略关闭的Channel
                 if (channel.isClosed()) {
                     continue;
                 }
@@ -55,6 +57,7 @@ final class HeartBeatTask implements Runnable {
                             HeaderExchangeHandler.KEY_READ_TIMESTAMP);
                     Long lastWrite = (Long) channel.getAttribute(
                             HeaderExchangeHandler.KEY_WRITE_TIMESTAMP);
+                    //3.TCP连接空闲超过心跳时间，发送事件报文
                     if ((lastRead != null && now - lastRead > heartbeat)
                             || (lastWrite != null && now - lastWrite > heartbeat)) {
                         Request req = new Request();
@@ -72,11 +75,13 @@ final class HeartBeatTask implements Runnable {
                                 + ", because heartbeat read idle time out: " + heartbeatTimeout + "ms");
                         if (channel instanceof Client) {
                             try {
+                                //4.客户端空闲超时触发重连(默认超时为3分钟）
                                 ((Client) channel).reconnect();
                             } catch (Exception e) {
                                 //do nothing
                             }
                         } else {
+                            //5.服务端关闭连接
                             channel.close();
                         }
                     }

@@ -12,10 +12,11 @@
 
 
     <!-- 定义注册中心地址 -->
-    <dubbo:registry address="zookeeper://139.196.154.217:2181" />
+    <dubbo:registry address="nacos://139.196.154.217:8848" />
 
     <!-- 定义订阅信息，Dubbo 会在 Spring Context 中创建对应的 bean -->
     <dubbo:reference id="demoService" interface="com.alibaba.service.DemoService">
+
     </dubbo:reference>
 
 </beans>

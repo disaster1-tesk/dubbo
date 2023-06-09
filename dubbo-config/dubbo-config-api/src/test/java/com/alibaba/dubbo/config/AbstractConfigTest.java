@@ -410,7 +410,7 @@ public class AbstractConfigTest {
 
         @Parameter(excluded = true)
         public String getSecret() {
-            return secret;
+            return  secret;
         }
 
         public void setSecret(String secret) {

@@ -74,6 +74,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             byte status = header[3];
             res.setStatus(status);
             try {
+                //处理响应
                 if (status == Response.OK) {
                     Object data;
                     if (res.isHeartbeat()) {
@@ -113,6 +114,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             return res;
         } else {
             // decode request.
+            //1.请求标志位被设置，创建Request 对象
             Request req = new Request(id);
             req.setVersion(Version.getProtocolVersion());
             req.setTwoWay((flag & FLAG_TWOWAY) != 0);
@@ -134,20 +136,24 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
                     if (channel.getUrl().getParameter(
                             Constants.DECODE_IN_IO_THREAD_KEY,
                             Constants.DEFAULT_DECODE_IN_IO_THREAD)) {
+                        //2.在I/0线程中直接解码
                         inv = new DecodeableRpcInvocation(channel, req, is, proto);
                         inv.decode();
                     } else {
+                        //3.交给Dubbo业务线程池解码
                         inv = new DecodeableRpcInvocation(channel, req,
                                 new UnsafeByteArrayInputStream(readMessageData(is)), proto);
                     }
                     data = inv;
                 }
+                //4.将RpCInvocation作为Request 的数据域
                 req.setData(data);
             } catch (Throwable t) {
                 if (log.isWarnEnabled()) {
                     log.warn("Decode request failed: " + t.getMessage(), t);
                 }
                 // bad request
+                //5.解码失败，先做标记并存储异常
                 req.setBroken(true);
                 req.setData(t);
             }
@@ -177,18 +183,23 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
     @Override
     protected void encodeRequestData(Channel channel, ObjectOutput out, Object data, String version) throws IOException {
         RpcInvocation inv = (RpcInvocation) data;
-
+        //1.写入框架版本
         out.writeUTF(version);
+        //2.写入调用接口
         out.writeUTF(inv.getAttachment(Constants.PATH_KEY));
+        //3.写入接口指定的版本，默认为0.0.0
         out.writeUTF(inv.getAttachment(Constants.VERSION_KEY));
-
+        //4.写入方法名称
         out.writeUTF(inv.getMethodName());
+        //5.写入方法参数类型
         out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));
         Object[] args = inv.getArguments();
         if (args != null)
+            //6.依次写入方法参数值
             for (int i = 0; i < args.length; i++) {
                 out.writeObject(encodeInvocationArgument(channel, inv, i));
             }
+        //7.写入隐式参数
         out.writeObject(inv.getAttachments());
     }
 
@@ -196,23 +207,29 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
     protected void encodeResponseData(Channel channel, ObjectOutput out, Object data, String version) throws IOException {
         Result result = (Result) data;
         // currently, the version value in Response records the version of Request
+        //1.判断客户端请求的版本是否支持服务端参数返回
         boolean attach = Version.isSupportResponseAttatchment(version);
         Throwable th = result.getException();
         if (th == null) {
+            //2.提取正常返回结果
             Object ret = result.getValue();
             if (ret == null) {
+                //3.在编码结果前，先写一个字节标志
                 out.writeByte(attach ? RESPONSE_NULL_VALUE_WITH_ATTACHMENTS : RESPONSE_NULL_VALUE);
             } else {
                 out.writeByte(attach ? RESPONSE_VALUE_WITH_ATTACHMENTS : RESPONSE_VALUE);
+                //4.分别写一个字节标记和调用结果
                 out.writeObject(ret);
             }
         } else {
+            //5.标记调用抛异常，并序列化异常
             out.writeByte(attach ? RESPONSE_WITH_EXCEPTION_WITH_ATTACHMENTS : RESPONSE_WITH_EXCEPTION);
             out.writeObject(th);
         }
 
         if (attach) {
             // returns current version of Response to consumer side.
+            //6.记 录 服 务 端 D u b b o 版 本 ，并 | 返回服务端隐式参数
             result.getAttachments().put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
             out.writeObject(result.getAttachments());
         }

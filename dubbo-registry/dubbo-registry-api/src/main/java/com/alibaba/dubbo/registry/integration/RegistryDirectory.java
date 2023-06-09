@@ -359,6 +359,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             if (queryProtocols != null && queryProtocols.length() > 0) {
                 boolean accept = false;
                 String[] acceptProtocols = queryProtocols.split(",");
+                //1.根据消费方protocol配置过滤不匹配协议
                 for (String acceptProtocol : acceptProtocols) {
                     if (providerUrl.getProtocol().equals(acceptProtocol)) {
                         accept = true;
@@ -377,10 +378,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                         + ", supported protocol: " + ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
                 continue;
             }
+            //2.合并provider端配置数据，比如服务端ip和port等
             URL url = mergeUrl(providerUrl);
 
             String key = url.toFullString(); // The parameter urls are sorted
-            if (keys.contains(key)) { // Repeated url
+            if (keys.contains(key)) { // Repeated url 3.忽略重复推送的服务
                 continue;
             }
             keys.add(key);
@@ -396,6 +398,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                         enabled = url.getParameter(Constants.ENABLED_KEY, true);
                     }
                     if (enabled) {
+                        //4.使用具体协议创建远程连接
                         invoker = new InvokerDelegate<T>(protocol.refer(serviceType, url), url, providerUrl);
                     }
                 } catch (Throwable t) {

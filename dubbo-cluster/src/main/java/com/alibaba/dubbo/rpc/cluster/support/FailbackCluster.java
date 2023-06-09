@@ -31,6 +31,7 @@ public class FailbackCluster implements Cluster {
 
     @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+        //FailbackClusterInvoker的创建，在构建方法中会进行服务的availablecheck
         return new FailbackClusterInvoker<T>(directory);
     }
 

@@ -66,6 +66,7 @@ public class DubboRegistry extends FailbackRegistry {
     private final int reconnectPeriod;
 
     public DubboRegistry(Invoker<RegistryService> registryInvoker, RegistryService registryService) {
+        //父类中承载着部分逻辑
         super(registryInvoker.getUrl());
         this.registryInvoker = registryInvoker;
         this.registryService = registryService;
